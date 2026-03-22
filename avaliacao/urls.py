@@ -8,6 +8,7 @@ urlpatterns = [
     path("empresas/nova/", views.empresa_create, name="empresa_create"),
     path("questoes/", views.questao_list, name="questao_list"),
     path("questoes/nova/", views.questao_create, name="questao_create"),
+    path("questoes/<int:questao_id>/editar/", views.questao_update, name="questao_update"),
     path("avaliacoes/", views.avaliacao_list, name="avaliacao_list"),
     path("avaliacoes/nova/", views.avaliacao_create, name="avaliacao_create"),
     path("avaliacoes/<int:avaliacao_id>/", views.avaliacao_detail, name="avaliacao_detail"),

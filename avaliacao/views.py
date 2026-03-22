@@ -94,6 +94,20 @@ def questao_create(request):
     return render(request, "avaliacao/form.html", {"form": form, "titulo": "Nova Questão"})
 
 
+@role_required(UserRole.ADMIN)
+def questao_update(request, questao_id):
+    questao = get_object_or_404(Questao, id=questao_id)
+    if request.method == "POST":
+        form = QuestaoForm(request.POST, instance=questao)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Questão atualizada.")
+            return redirect("questao_list")
+    else:
+        form = QuestaoForm(instance=questao)
+    return render(request, "avaliacao/form.html", {"form": form, "titulo": "Editar Questão"})
+
+
 @login_required
 def avaliacao_list(request):
     perfil = getattr(request.user, "profile", None)
