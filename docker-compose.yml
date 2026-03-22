@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    container_name: sam_ti_web
+    ports:
+      - "2332:2332"
+    environment:
+      DJANGO_DEBUG: "True"
+      DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,0.0.0.0,192.168.1.50,governanca.yuridevs.com.br"
+      DJANGO_CSRF_TRUSTED_ORIGINS: "http://127.0.0.1,http://localhost,http://192.168.1.50:2332,https://governanca.yuridevs.com.br"
+    volumes:
+      - .:/app

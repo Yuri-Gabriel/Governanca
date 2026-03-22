@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <h2>Log de Auditoria - {{ avaliacao.nome }}</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Data</th><th>Usuário</th><th>Questão</th><th>Resposta</th><th>Evidência</th><th>Providência</th></tr>
+      </thead>
+      <tbody>
+      {% for log in logs %}
+      <tr>
+        <td>{{ log.criado_em|date:'d/m/Y H:i:s' }}</td>
+        <td>{{ log.usuario.username }}</td>
+        <td>{{ log.resposta_registro.questao.texto }}</td>
+        <td>{{ log.get_resposta_display }}</td>
+        <td>{{ log.evidencia_descricao|default:log.evidencia_arquivo_nome|default:'-' }}</td>
+        <td>{{ log.providencia|default:'-' }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">Nenhum evento de auditoria registrado.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

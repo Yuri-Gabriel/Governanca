@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <div class="row-between">
+    <h2>Avaliações</h2>
+    <a class="btn btn-primary" href="{% url 'avaliacao_create' %}">Nova avaliação</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Empresa</th><th>Nome</th><th>Consultor</th><th>Status</th><th>Criada em</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for a in avaliacoes %}
+        <tr>
+          <td>{{ a.empresa.nome }}</td>
+          <td>{{ a.nome }}</td>
+          <td>{{ a.consultor_responsavel.username }}</td>
+          <td>{{ a.get_status_display }}</td>
+          <td>{{ a.criada_em|date:'d/m/Y H:i' }}</td>
+          <td><a href="{% url 'avaliacao_detail' a.id %}">Abrir</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">Nenhuma avaliação cadastrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

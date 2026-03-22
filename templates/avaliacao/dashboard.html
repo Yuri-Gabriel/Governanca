@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero">
+  <h2>Governança de TI orientada por evidências</h2>
+  <p>Perfil ativo: <strong>{{ perfil.get_role_display }}</strong></p>
+</section>
+
+<section class="stats-grid">
+  <article class="card stat">
+    <h3>{{ empresas_total }}</h3>
+    <p>Empresas cadastradas</p>
+  </article>
+  <article class="card stat">
+    <h3>{{ questoes_total }}</h3>
+    <p>Questões ativas</p>
+  </article>
+  <article class="card stat">
+    <h3>{{ avaliacoes|length }}</h3>
+    <p>Últimas avaliações visíveis</p>
+  </article>
+</section>
+
+<section class="card">
+  <div class="row-between">
+    <h3>Avaliações recentes</h3>
+    <a class="btn btn-primary" href="{% url 'avaliacao_create' %}">Nova avaliação</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+      <tr>
+        <th>Empresa</th>
+        <th>Nome</th>
+        <th>Status</th>
+        <th>Consultor</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for a in avaliacoes %}
+      <tr>
+        <td>{{ a.empresa.nome }}</td>
+        <td>{{ a.nome }}</td>
+        <td>{{ a.get_status_display }}</td>
+        <td>{{ a.consultor_responsavel.username }}</td>
+        <td><a href="{% url 'avaliacao_detail' a.id %}">Abrir</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">Nenhuma avaliação encontrada.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

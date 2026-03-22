@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load avaliacao_extras %}
+{% block content %}
+<section class="card">
+  <div class="row-between">
+    <div>
+      <h2>{{ avaliacao.nome }}</h2>
+      <p>{{ avaliacao.empresa.nome }} | Status: <strong>{{ avaliacao.get_status_display }}</strong></p>
+    </div>
+    <div class="actions">
+      <a class="btn" href="{% url 'relatorio' avaliacao.id %}">Ver relatório</a>
+      {% if request.user.profile.role == 'ADMIN' or request.user.profile.role == 'CONSULTOR' %}
+      <a class="btn" href="{% url 'auditoria' avaliacao.id %}">Auditoria</a>
+      <form method="post" action="{% url 'concluir_avaliacao' avaliacao.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Concluir</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">Progresso: {{ progresso.respondidas }}/{{ progresso.total_questoes }} ({{ progresso.percentual }}%)</div>
+    <div class="progress-bar"><span style="width: {{ progresso.percentual }}%;"></span></div>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Questionário</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+      <tr><th>Categoria</th><th>Questão</th><th>Resposta</th><th>Último responsável</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for q in questoes %}
+      {% with r=respostas|get_item:q.id %}
+      <tr>
+        <td>{{ q.categoria.nome }}</td>
+        <td>{{ q.texto }}</td>
+        <td>{% if r %}{{ r.get_resposta_display }}{% else %}-{% endif %}</td>
+        <td>{% if r %}{{ r.respondido_por.username }}{% else %}-{% endif %}</td>
+        <td><a href="{% url 'responder_questao' avaliacao.id q.id %}">Responder</a></td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

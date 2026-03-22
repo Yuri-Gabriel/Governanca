@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <h2>Responder questão</h2>
+  <p><strong>Avaliação:</strong> {{ avaliacao.nome }}</p>
+  <p><strong>Questão:</strong> {{ questao.texto }}</p>
+
+  <div class="rule-box">
+    <p>Regra: Para <strong>SIM</strong>, informe evidência (texto ou arquivo). Para <strong>NÃO</strong>, informe providência.</p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="form-grid">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Salvar resposta</button>
+    <a class="btn" href="{% url 'avaliacao_detail' avaliacao.id %}">Voltar</a>
+  </form>
+</section>
+{% endblock %}
