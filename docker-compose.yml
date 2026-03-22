@@ -1,21 +1,21 @@
 services:
   db:
-    image: mysql:8.4
+    image: mariadb:latest
     container_name: sam_ti_db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: "sam_ti"
-      MYSQL_USER: "sam_ti_user"
-      MYSQL_PASSWORD: "sam_ti_pass"
-      MYSQL_ROOT_PASSWORD: "root_pass"
+      MARIADB_DATABASE: "sam_ti"
+      MARIADB_USER: "sam_ti_user"
+      MARIADB_PASSWORD: "sam_ti_pass"
+      MARIADB_ROOT_PASSWORD: "root_pass"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 --silent"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 20s
+      retries: 20
+      start_period: 60s
 
   web:
     build: .
@@ -39,4 +39,4 @@ services:
       - .:/app
 
 volumes:
-  mysql_data:
+  mariadb_data:
