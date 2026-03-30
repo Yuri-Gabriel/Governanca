@@ -34,7 +34,6 @@ services:
       DJANGO_DEBUG: "True"
       DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost,0.0.0.0,192.168.1.50,governanca.yuridevs.com.br"
       DJANGO_CSRF_TRUSTED_ORIGINS: "http://127.0.0.1,http://localhost,http://192.168.1.50:2332,https://governanca.yuridevs.com.br"
-      DB_ENGINE: "django.db.backends.mysql"
       DB_NAME: "sam_ti"
       DB_USER: "sam_ti_user"
       DB_PASSWORD: "sam_ti_pass"

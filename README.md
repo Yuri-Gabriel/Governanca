@@ -1,4 +1,4 @@
-# SAM-TI (Django + MySQL)
+# SAM-TI (Django + MariaDB/MySQL)
 
 Aplicação para avaliação de maturidade de TI baseada no documento de requisitos fornecido.
 
@@ -24,6 +24,11 @@ Aplicação para avaliação de maturidade de TI baseada no documento de requisi
 cd /home/yuri/Documentos/governaca_ti
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
+export DB_NAME=sam_ti
+export DB_USER=sam_ti_user
+export DB_PASSWORD=sam_ti_pass
+export DB_HOST=127.0.0.1
+export DB_PORT=3306
 .venv/bin/python manage.py migrate
 .venv/bin/python manage.py createsuperuser
 .venv/bin/python manage.py runserver
@@ -34,12 +39,12 @@ Acesse: `http://127.0.0.1:2332/login/`
 ## Como executar com Docker
 ```bash
 cd /home/yuri/Documentos/governaca_ti
-docker compose up --build
+docker compose up --d
 ```
 
 O container aplica as migrações automaticamente na inicialização e expõe a aplicação em `http://127.0.0.1:2332/login/`.
 
 ## Observações
 - Perfis de usuário podem ser definidos no Django Admin (`/admin`) no cadastro de `Profile`.
-- O banco padrão no Docker Compose é MySQL.
+- A aplicação usa apenas MariaDB/MySQL; o suporte a SQLite foi removido.
 - Os dados do MySQL ficam persistidos no volume `mysql_data`, então reiniciar containers não apaga os dados.

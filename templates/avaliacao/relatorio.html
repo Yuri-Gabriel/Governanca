@@ -16,6 +16,12 @@
 </section>
 
 <section class="card">
+  <h3>Leitura executiva do resultado</h3>
+  <p><strong>Definição do nível:</strong> {{ descricao_maturidade }}</p>
+  <p><strong>O que isso indica:</strong> {{ implicacoes_maturidade }}</p>
+</section>
+
+<section class="card">
   <h3>Score por área</h3>
   <div class="table-wrap">
     <table>
@@ -33,6 +39,15 @@
       </tbody>
     </table>
   </div>
+</section>
+
+<section class="card">
+  <h3>Recomendações para evolução</h3>
+  <ul class="plain-list">
+    {% for recomendacao in recomendacoes_maturidade %}
+    <li>{{ recomendacao }}</li>
+    {% endfor %}
+  </ul>
 </section>
 
 <section class="card">

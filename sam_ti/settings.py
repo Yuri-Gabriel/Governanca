@@ -3,21 +3,63 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _split_env_list(value):
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _get_env(name, default=None, required=False):
+    value = os.environ.get(name, default)
+    if required and (value is None or str(value).strip() == ""):
+        raise RuntimeError(f"A variável de ambiente {name} é obrigatória.")
+    return value
+
+
+def _build_csrf_trusted_origins(allowed_hosts, configured_origins, app_port=None, debug=False):
+    trusted = []
+    seen = set()
+
+    def add(origin):
+        if origin and origin not in seen:
+            trusted.append(origin)
+            seen.add(origin)
+
+    for origin in configured_origins:
+        add(origin)
+
+    for host in allowed_hosts:
+        normalized_host = host.lstrip(".")
+        if not normalized_host or normalized_host == "*":
+            continue
+        if normalized_host.startswith("[") and normalized_host.endswith("]"):
+            continue
+        add(f"http://{normalized_host}")
+        add(f"https://{normalized_host}")
+        if app_port:
+            add(f"http://{normalized_host}:{app_port}")
+            add(f"https://{normalized_host}:{app_port}")
+
+    if debug:
+        add("https://*.app.github.dev")
+        add("https://*.githubpreview.dev")
+
+    return trusted
+
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-change-me")
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in {"1", "true", "yes", "on"}
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,0.0.0.0").split(",")
-    if host.strip()
-]
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get(
-        "DJANGO_CSRF_TRUSTED_ORIGINS",
-        "http://127.0.0.1,http://localhost,http://0.0.0.0",
-    ).split(",")
-    if origin.strip()
-]
+APP_PORT = os.environ.get("DJANGO_APP_PORT", "2332").strip()
+ALLOWED_HOSTS = _split_env_list(os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,0.0.0.0"))
+CSRF_TRUSTED_ORIGINS = _build_csrf_trusted_origins(
+    ALLOWED_HOSTS,
+    _split_env_list(
+        os.environ.get(
+            "DJANGO_CSRF_TRUSTED_ORIGINS",
+            "http://127.0.0.1,http://localhost,http://0.0.0.0",
+        )
+    ),
+    app_port=APP_PORT,
+    debug=DEBUG,
+)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
@@ -59,26 +101,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "sam_ti.wsgi.application"
 
-DB_ENGINE = os.environ.get("DB_ENGINE", "django.db.backends.mysql")
-
-if DB_ENGINE == "django.db.backends.sqlite3":
-    DATABASES = {
-        "default": {
-            "ENGINE": DB_ENGINE,
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": _get_env("DB_NAME", "sam_ti", required=True),
+        "USER": _get_env("DB_USER", "sam_ti_user", required=True),
+        "PASSWORD": _get_env("DB_PASSWORD", "sam_ti_pass", required=True),
+        "HOST": _get_env("DB_HOST", "127.0.0.1", required=True),
+        "PORT": _get_env("DB_PORT", "3306", required=True),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": DB_ENGINE,
-            "NAME": os.environ.get("DB_NAME", "sam_ti"),
-            "USER": os.environ.get("DB_USER", "sam_ti_user"),
-            "PASSWORD": os.environ.get("DB_PASSWORD", "sam_ti_pass"),
-            "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
-            "PORT": os.environ.get("DB_PORT", "3306"),
-        }
-    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {

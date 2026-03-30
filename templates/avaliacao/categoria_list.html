@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <div class="row-between">
+    <h2>Categorias das Questões</h2>
+    <div class="actions">
+      <a class="btn" href="{% url 'questao_list' %}">Voltar às questões</a>
+      <a class="btn btn-primary" href="{% url 'categoria_create' %}">Nova categoria</a>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Nome</th><th>Descrição</th><th>Questões vinculadas</th></tr>
+      </thead>
+      <tbody>
+        {% for categoria in categorias %}
+        <tr>
+          <td>{{ categoria.nome }}</td>
+          <td>{{ categoria.descricao|default:'-' }}</td>
+          <td>{{ categoria.questoes.count }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">Nenhuma categoria cadastrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

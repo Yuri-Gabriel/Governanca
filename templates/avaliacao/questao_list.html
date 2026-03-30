@@ -3,7 +3,10 @@
 <section class="card">
   <div class="row-between">
     <h2>Banco de Questões</h2>
-    <a class="btn btn-primary" href="{% url 'questao_create' %}">Nova questão</a>
+    <div class="actions">
+      <a class="btn" href="{% url 'categoria_list' %}">Categorias</a>
+      <a class="btn btn-primary" href="{% url 'questao_create' %}">Nova questão</a>
+    </div>
   </div>
   <div class="table-wrap">
     <table>

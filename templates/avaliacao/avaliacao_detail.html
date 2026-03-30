@@ -9,11 +9,11 @@
     </div>
     <div class="actions">
       <a class="btn" href="{% url 'relatorio' avaliacao.id %}">Ver relatório</a>
-      {% if request.user.profile.role == 'ADMIN' or request.user.profile.role == 'CONSULTOR' %}
+      {% if request.user.profile.role == 'ADMIN' or avaliacao.consultor_responsavel_id == request.user.id %}
       <a class="btn" href="{% url 'auditoria' avaliacao.id %}">Auditoria</a>
       <form method="post" action="{% url 'concluir_avaliacao' avaliacao.id %}">
         {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Concluir</button>
+        <button type="submit" class="btn btn-primary" {% if avaliacao.status == 'CONCLUIDA' %}disabled{% endif %}>Concluir</button>
       </form>
       {% endif %}
     </div>
@@ -40,7 +40,13 @@
         <td>{{ q.texto }}</td>
         <td>{% if r %}{{ r.get_resposta_display }}{% else %}-{% endif %}</td>
         <td>{% if r %}{{ r.respondido_por.username }}{% else %}-{% endif %}</td>
-        <td><a href="{% url 'responder_questao' avaliacao.id q.id %}">Responder</a></td>
+        <td>
+          {% if avaliacao.status == 'CONCLUIDA' %}
+          Encerrada
+          {% else %}
+          <a href="{% url 'responder_questao' avaliacao.id q.id %}">Responder</a>
+          {% endif %}
+        </td>
       </tr>
       {% endwith %}
       {% endfor %}

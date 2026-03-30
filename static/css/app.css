@@ -55,13 +55,23 @@ body {
   flex-wrap: wrap;
 }
 
-.menu a {
+.menu a,
+.menu-link {
   text-decoration: none;
   color: var(--text);
   padding: 0.5rem 0.8rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.8);
+  font: inherit;
+}
+
+.menu-logout {
+  margin: 0;
+}
+
+.menu-link {
+  cursor: pointer;
 }
 
 .content {
@@ -163,6 +173,11 @@ select {
   background: var(--primary-dark);
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -221,6 +236,15 @@ td {
   background: #fff8f0;
   padding: 0.5rem 0.8rem;
   border-radius: 8px;
+}
+
+.plain-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.plain-list li + li {
+  margin-top: 0.45rem;
 }
 
 @media (max-width: 720px) {

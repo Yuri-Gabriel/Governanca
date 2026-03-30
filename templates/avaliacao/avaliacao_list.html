@@ -3,7 +3,9 @@
 <section class="card">
   <div class="row-between">
     <h2>Avaliações</h2>
+    {% if request.user.profile.role == 'ADMIN' or request.user.profile.role == 'CONSULTOR' %}
     <a class="btn btn-primary" href="{% url 'avaliacao_create' %}">Nova avaliação</a>
+    {% endif %}
   </div>
   <div class="table-wrap">
     <table>

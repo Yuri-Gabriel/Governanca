@@ -2,12 +2,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_http_methods, require_POST
 
 from .decorators import role_required
-from .forms import AvaliacaoForm, EmpresaForm, QuestaoForm, RespostaForm
+from .forms import AvaliacaoForm, CategoriaQuestaoForm, EmpresaForm, QuestaoForm, RespostaForm
 from .models import (
     Avaliacao,
     AvaliacaoStatus,
+    CategoriaQuestao,
     Empresa,
     LogAuditoriaResposta,
     Questao,
@@ -15,7 +17,6 @@ from .models import (
     UserRole,
 )
 from .services import gerar_relatorio, progresso_avaliacao, registrar_log_resposta
-
 
 def _usuario_acessa_avaliacao(usuario, avaliacao):
     perfil = getattr(usuario, "profile", None)
@@ -32,6 +33,17 @@ def _usuario_acessa_avaliacao(usuario, avaliacao):
         )
 
     return avaliacao.participantes.filter(id=usuario.id).exists()
+
+
+def _usuario_gerencia_avaliacao(usuario, avaliacao):
+    perfil = getattr(usuario, "profile", None)
+    if not perfil:
+        return False
+
+    if perfil.role == UserRole.ADMIN:
+        return True
+
+    return perfil.role == UserRole.CONSULTOR and avaliacao.consultor_responsavel_id == usuario.id
 
 
 @login_required
@@ -63,6 +75,7 @@ def empresa_list(request):
 
 
 @role_required(UserRole.ADMIN, UserRole.CONSULTOR)
+@require_http_methods(["GET", "POST"])
 def empresa_create(request):
     if request.method == "POST":
         form = EmpresaForm(request.POST)
@@ -82,6 +95,27 @@ def questao_list(request):
 
 
 @role_required(UserRole.ADMIN)
+def categoria_list(request):
+    categorias = CategoriaQuestao.objects.all().order_by("nome")
+    return render(request, "avaliacao/categoria_list.html", {"categorias": categorias})
+
+
+@role_required(UserRole.ADMIN)
+@require_http_methods(["GET", "POST"])
+def categoria_create(request):
+    if request.method == "POST":
+        form = CategoriaQuestaoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoria cadastrada.")
+            return redirect("categoria_list")
+    else:
+        form = CategoriaQuestaoForm()
+    return render(request, "avaliacao/form.html", {"form": form, "titulo": "Nova Categoria"})
+
+
+@role_required(UserRole.ADMIN)
+@require_http_methods(["GET", "POST"])
 def questao_create(request):
     if request.method == "POST":
         form = QuestaoForm(request.POST)
@@ -95,6 +129,7 @@ def questao_create(request):
 
 
 @role_required(UserRole.ADMIN)
+@require_http_methods(["GET", "POST"])
 def questao_update(request, questao_id):
     questao = get_object_or_404(Questao, id=questao_id)
     if request.method == "POST":
@@ -130,6 +165,7 @@ def avaliacao_list(request):
 
 
 @role_required(UserRole.ADMIN, UserRole.CONSULTOR)
+@require_http_methods(["GET", "POST"])
 def avaliacao_create(request):
     if request.method == "POST":
         form = AvaliacaoForm(request.POST)
@@ -169,6 +205,7 @@ def avaliacao_detail(request, avaliacao_id):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def responder_questao(request, avaliacao_id, questao_id):
     avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id)
     questao = get_object_or_404(Questao, id=questao_id, ativa=True)
@@ -176,6 +213,10 @@ def responder_questao(request, avaliacao_id, questao_id):
     if not _usuario_acessa_avaliacao(request.user, avaliacao):
         messages.error(request, "Você não tem acesso para responder esta avaliação.")
         return redirect("dashboard")
+
+    if avaliacao.status == AvaliacaoStatus.CONCLUIDA:
+        messages.error(request, "Avaliações concluídas não podem mais receber alterações.")
+        return redirect("avaliacao_detail", avaliacao_id=avaliacao.id)
 
     resposta = Resposta.objects.filter(avaliacao=avaliacao, questao=questao).first()
 
@@ -212,9 +253,16 @@ def relatorio(request, avaliacao_id):
 
 
 @role_required(UserRole.ADMIN, UserRole.CONSULTOR)
+@require_POST
 def concluir_avaliacao(request, avaliacao_id):
     avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id)
-    if request.method == "POST":
+    if not _usuario_gerencia_avaliacao(request.user, avaliacao):
+        messages.error(request, "Você não tem permissão para concluir esta avaliação.")
+        return redirect("dashboard")
+
+    if avaliacao.status == AvaliacaoStatus.CONCLUIDA:
+        messages.info(request, "A avaliação já estava concluída.")
+    else:
         avaliacao.status = AvaliacaoStatus.CONCLUIDA
         avaliacao.save(update_fields=["status"])
         messages.success(request, "Avaliação marcada como concluída.")
@@ -224,6 +272,10 @@ def concluir_avaliacao(request, avaliacao_id):
 @role_required(UserRole.ADMIN, UserRole.CONSULTOR)
 def auditoria(request, avaliacao_id):
     avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id)
+    if not _usuario_gerencia_avaliacao(request.user, avaliacao):
+        messages.error(request, "Você não tem permissão para consultar a auditoria desta avaliação.")
+        return redirect("dashboard")
+
     logs = LogAuditoriaResposta.objects.filter(resposta_registro__avaliacao=avaliacao).select_related(
         "usuario", "resposta_registro__questao"
     )
