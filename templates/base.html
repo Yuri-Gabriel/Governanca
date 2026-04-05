@@ -25,7 +25,10 @@
       <a href="{% url 'questao_list' %}">Questões</a>
       {% endif %}
       <a href="{% url 'password_reset' %}">Alterar senha</a>
-      <a href="{% url 'logout' %}">Sair</a>
+      <form method="post" action="{% url 'logout' %}" class="menu-logout">
+        {% csrf_token %}
+        <button type="submit" class="menu-link">Sair</button>
+      </form>
     </nav>
   </header>
   {% endif %}
